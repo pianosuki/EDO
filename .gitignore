@@ -1,0 +1,17 @@
+# Python virtual environment
+venv/*
+
+# Pycharm project
+.idea/*
+
+# Pycache
+__pycache__/*
+
+# Local backups
+obsolete/*
+
+# Map files (wip)
+maps/*
+
+# Tileset files (wip)
+tilesets/*
