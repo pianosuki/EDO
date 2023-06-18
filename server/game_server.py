@@ -160,10 +160,10 @@ class GameServer:
             packet = await self.queues[client]["inbound_queue"].get()
             match packet.type:
                 case NetworkPacket.PacketType.SESSION:
-                    event = SessionEvent.unserialize(packet.payload)
+                    event = SessionEvent.deserialize(packet.payload)
                     await self.handle_session_event(client, event)
                 case NetworkPacket.PacketType.MOVEMENT:
-                    event = MovementEvent.unserialize(packet.payload)
+                    event = MovementEvent.deserialize(packet.payload)
                     await self.handle_movement_event(client, event)
 
     async def handle_session_event(self, client: websockets.WebSocketServerProtocol, event: SessionEvent):

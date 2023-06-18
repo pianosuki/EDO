@@ -8,3 +8,13 @@ DATABASE_SETTINGS = {
         "port": 5432,
         "database": "world"
 }
+IRC_CAPABILITIES = {
+        "sasl": {
+                "required_version": None,
+                "mechanisms": {
+                        "PLAIN": {
+                                "required_version": 302
+                        }
+                }
+        }
+}

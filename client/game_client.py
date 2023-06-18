@@ -115,10 +115,10 @@ class GameClient:
             packet = await self.inbound_queue.get()
             match packet.type:
                 case NetworkPacket.PacketType.GAMESTATE:
-                    game_state = GameState.unserialize(packet.payload)
+                    game_state = GameState.deserialize(packet.payload)
                     await self.handle_gamestate_event(game_state)
                 case NetworkPacket.PacketType.SESSION:
-                    event = SessionEvent.unserialize(packet.payload)
+                    event = SessionEvent.deserialize(packet.payload)
                     await self.handle_session_event(event)
 
     async def handle_gamestate_event(self, game_state: GameState):

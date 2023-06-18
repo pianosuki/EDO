@@ -1,6 +1,6 @@
-import time, json, struct, uuid, hashlib, threading, queue, math
-from enum import Enum
-from typing import Iterable, Tuple
+import asyncio, time, json, struct, uuid, hashlib, threading, queue, math, re
+from enum import Enum, auto
+from typing import Iterable, Tuple, Optional, Dict, List
 from collections import deque
 from arcade import key as keycodes
 from pymunk import Vec2d
@@ -134,7 +134,7 @@ class PlayerInput:
         return map_bitfield(self.keys, self.MOVEMENT_KEYS)
 
     @classmethod
-    def from_bitfield(cls, movement_data: int):
+    def from_bitfield(cls, movement_data: int) -> "PlayerInput":
         keys = unmap_bitfield(movement_data, cls.MOVEMENT_KEYS)
         return cls(keys=keys)
 
@@ -163,7 +163,7 @@ class NetworkPacket:
         return packet
 
     @classmethod
-    def unpack(cls, data: bytes):
+    def unpack(cls, data: bytes) -> "NetworkPacket":
         header_size = struct.calcsize(cls.HEADER_FORMAT)
         header = data[:header_size]
         packet_type, data_size = struct.unpack(cls.HEADER_FORMAT, header)
@@ -201,7 +201,7 @@ class SessionEvent:
         return session
 
     @classmethod
-    def unserialize(cls, event: str):
+    def deserialize(cls, event: str) -> "SessionEvent":
         session_kwargs = json.loads(event)
         session_command = cls.SessionCommand(session_kwargs.pop("command"))
         return cls(session_command, **session_kwargs)
@@ -221,7 +221,7 @@ class MovementKey(Enum):
         self.keycode = keycode
 
     @classmethod
-    def from_value(cls, value):
+    def from_value(cls, value) -> "MovementKey":
         match value:
             case 1:
                 return cls.LEFT
@@ -241,7 +241,7 @@ class MovementKey(Enum):
                 return None
 
     @classmethod
-    def from_keycode(cls, keycode):
+    def from_keycode(cls, keycode) -> "MovementKey":
         match keycode:
             case keycodes.LEFT:
                 return cls.LEFT
@@ -273,7 +273,7 @@ class MovementEvent:
         })
 
     @classmethod
-    def unserialize(cls, event: str):
+    def deserialize(cls, event: str) -> "MovementEvent":
         event = json.loads(event)
         return cls(event["keys"], event["position"])
 
@@ -305,9 +305,9 @@ class GameState:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def unserialize(cls, game_state: str):
+    def deserialize(cls, game_state: str) -> "GameState":
         kwargs = json.loads(game_state)
-        kwargs["player_states"] = {k: PlayerState.unserialize(v) for k, v in kwargs["player_states"].items()}
+        kwargs["player_states"] = {k: PlayerState.deserialize(v) for k, v in kwargs["player_states"].items()}
         return cls(**kwargs)
 
 
@@ -331,7 +331,7 @@ class PlayerState:
         return json.dumps(self.to_dict())
 
     @classmethod
-    def unserialize(cls, player_state: str):
+    def deserialize(cls, player_state: str) -> "PlayerState":
         kwargs = json.loads(player_state)
         for k, v in kwargs.items():
             kwargs[k] = v
@@ -397,7 +397,7 @@ class ErrorEvent:
         })
 
     @classmethod
-    def unserialize(cls, error: str):
+    def deserialize(cls, error: str) -> "ErrorEvent":
         error = json.loads(error)
         error_code = ErrorCode(error["error_code"])
         error_severity = ErrorSeverity(error["error_severity"])
